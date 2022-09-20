@@ -23,7 +23,7 @@ def get_user():
     return jsonify({'user': user})
 
 
-@app.route("/addCheckList", methods=["POST"])
+@app.route("/main/add", methods=["POST"])
 def content_post():
     try:
         mywork = request.form['mywork']
@@ -54,10 +54,10 @@ def main_get():
     check_list = list(db.check_list.find({'id':id}).sort('day'))
     return render_template('main.html', check_list=check_list)
 
-@app.route("/modDone", methods=["POST"])
+@app.route("/main/modDone", methods=["POST"])
 def modDone():
     try:
-        userId = request.form['id']
+        userId = request.form['userId']
         _id = request.form['_id']
         done = request.form['done']
 
