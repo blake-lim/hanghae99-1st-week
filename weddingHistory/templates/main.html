@@ -96,7 +96,7 @@
 </head>
 <body>
 <div class="mypic">
-    <h1>D - ??</h1>
+    <h1 id="header-dday">D - ??</h1>
 </div>
 <div class="mybox">
     <div class="mybucket gap-3">
@@ -116,51 +116,8 @@
             <th class="col">완료/수정</th>
         </tr>
         </thead>
-        <tbody>
-        {% for content in check_list %}
-            {% if content.done == 1 %}
-                <tr class="table-success">
-                    <td class="col"><span>-99</span></td>
-                    <td class="col"><span>{{ content.day }}</span></td>
-                    <td class="col-8"><span class="done">{{ content.work }}</span></td>
-                    <td class="col">
-                        <button onclick="modDone('{{ content.id }}','{{ content._id }}',0)" type="button"
-                                class="btn btn-outline-danger col">취소
-                        </button>
-                    </td>
-                </tr>
-            {% elif content.done == 0 %}
-                <tr>
-                    <td class="col"><span>-999</span></td>
-                    <td class="col"><span>{{ content.day }}</span></td>
-                    <td class="col-8"><span>{{ content.work }}</span></td>
-                    <td class="col">
-                        <button onclick="modDone('{{ content.id }}','{{ content._id }}',1)" type="button"
-                                class="btn btn-outline-primary col">완료
-                        </button>
-                    </td>
-                </tr>
-                <button onclick="getDday('{{ content.day }}')" type="button" class="btn btn-outline-primary col">테스트
-                </button>
-            {% endif %}
-        {% endfor %}
+        <tbody id="myTbody">
 
-        <tr class="table-danger">
-            <td class="col"><span>-9</span></td>
-            <td class="col"><span>2022-09-19</span></td>
-            <td class="col-8"><span>test</span></td>
-            <td class="col">
-                <button onclick="getDday(0)" type="button" class="btn btn-outline-primary col">완료</button>
-            </td>
-        </tr>
-        <tr class="table-primary">
-            <td class="col"><span>+89</span></td>
-            <td class="col"><span>2022-09-19</span></td>
-            <td class="col-8"><span>test</span></td>
-            <td class="col">
-                <button onclick="done_bucket(0)" type="button" class="btn btn-outline-primary col">완료</button>
-            </td>
-        </tr>
         </tbody>
     </table>
 </div>
@@ -179,7 +136,61 @@
     $(document).ready(function () {
         $('#mydate').val(getToday());
         get_user();
+
+        get_tbody();
     });
+
+    let get_tbody = () => {
+        let temp_html = '';
+        let dDay = '';
+        let trClass = '';
+        let temp_html_arr = [];
+        let temp_html_arr2 = [];
+        {% for content in check_list %}
+            dDay = getDday('{{ content.day }}');
+            {% if content.done == 1 %}
+                temp_html = `<tr class="table-success">
+                    <td class="col"><span>${dDay}</span></td>
+                    <td class="col"><span>{{ content.day }}</span></td>
+                    <td class="col-8"><span class="done">{{ content.work }}</span></td>
+                    <td class="col">
+                        <button onclick="modDone('{{ content.id }}','{{ content._id }}',0)" type="button"
+                                class="btn btn-outline-danger col">취소
+                        </button>
+                    </td>
+                </tr>`
+                temp_html_arr.push(temp_html);
+            {% elif content.done == 0 %}
+                if (dDay > 0) {
+                    trClass = "table-primary";
+                } else if (dDay >= -7 && dDay < 0) {
+                    trClass = "table-danger";
+                } else {
+                    trClass = "";
+                }
+                temp_html = `<tr class="${trClass}">
+                    <td class="col"><span>${dDay}</span></td>
+                    <td class="col"><span>{{ content.day }}</span></td>
+                    <td class="col-8"><span>{{ content.work }}</span></td>
+                    <td class="col">
+                        <button onclick="modDone('{{ content.id }}','{{ content._id }}',1)" type="button"
+                                class="btn btn-outline-primary col">완료
+                        </button>
+                    </td>
+                </tr>`
+                temp_html_arr2.push(temp_html);
+            {% endif %}
+        {% endfor %}
+
+        //완료된 목록
+        temp_html_arr.map((value,i) => {
+            $('#myTbody').append(value);
+        });
+        // 완료 안된 목록
+        temp_html_arr2.map((value,i) => {
+            $('#myTbody').append(value);
+        });
+    }
 
     let get_user = () => {
         $.ajax({
@@ -188,6 +199,7 @@
             data: {},
             success: function (response) {
                 userInfo = response['user'][0];
+                $('#header-dday').text('D '+getDday(userInfo['dday']));
             }
         });
     }
@@ -260,10 +272,6 @@
         // 밀리초 값이기 때문에 1000을 곱한다.
         // 1000*60 => 60초(1분)*60 => 60분(1시간)*24 = 24시간(하루)
         const day = Math.floor(distance / (1000 * 60 * 60 * 24));
-
-        console.log('dbDate : '+ dbDate)
-        console.log('------------------------------')
-        console.log('today - DBday = day : '+day)
 
         return day;
     }

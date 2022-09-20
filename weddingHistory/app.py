@@ -11,17 +11,21 @@ db = client.dbsparta
 def home():
     return render_template('index.html')
 
-@app.route("/bucket/done", methods=["POST"])
-def bucket_done():
-    num_receive = request.form['num_give']
-    db.bucket.update_one({'num':int(num_receive)},{'$set':{'done':1}})
-    return jsonify({'msg': '버킷 완료!'})
-
 @app.route("/users", methods=["POST"])
 def get_user():
     user = list(db.users.find({}, {'_id': False}))
     return jsonify({'user': user})
 
+@app.route("/main", methods=["GET"])
+def main_get():
+    try:
+        id = request.args.get('id')  # 'id'라는 key값
+
+        check_list = list(db.check_list.find({'id':id}).sort('day'))
+    except Exception as e:
+        print(e)
+
+    return render_template('main.html', check_list=check_list)
 
 @app.route("/main/add", methods=["POST"])
 def content_post():
@@ -47,13 +51,6 @@ def content_post():
 
     return jsonify({'msg': msg})
 
-@app.route("/main", methods=["GET"])
-def main_get():
-    id = request.args.get('id')  # 'id'라는 key값
-
-    check_list = list(db.check_list.find({'id':id}).sort('day'))
-    return render_template('main.html', check_list=check_list)
-
 @app.route("/main/modDone", methods=["POST"])
 def modDone():
     try:
@@ -73,12 +70,6 @@ def modDone():
         msg = '에러'
 
     return jsonify({'msg': msg})
-
-
-@app.route("/bucket", methods=["GET"])
-def bucket_get():
-    bucket_list = list(db.bucket.find({}, {'_id': False}))
-    return jsonify({'buckets': bucket_list})
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5000, debug=True)
