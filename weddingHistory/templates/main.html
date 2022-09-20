@@ -93,16 +93,78 @@
 </head>
 <body>
 <div class="mypic">
-    <h1><a href="/main?id=mhh">aaaaaaaaaaa</a></h1>
+    <h1>D - ??</h1>
 </div>
+<div class="mybox">
+    <div class="mybucket gap-3">
+        <input class="btn btn-outline-primary col" id="mydate" readonly />
+        <input id="mywork" class="form-control datePicker col-8" type="text" placeholder="해야 할 일을 입력하세요">
+        <button onclick="insertwork()" type="button" class="btn btn-outline-primary col">기록하기</button>
+    </div>
+</div>
+<div class="mybox" id="bucket-list">
 
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="col">d-day</th>
+                <th class="col">날짜</th>
+                <th class="col-8">해야 할 일</th>
+                <th class="col">완료/수정</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for content in check_list %}
+                {% if content.done == 1 %}
+                    <tr class="table-success">
+                        <td class="col"><span>-99</span></td>
+                        <td class="col"><span>{{ content.day }}</span></td>
+                        <td class="col-8"><span class="done">{{ content.work }}</span></td>
+                        <td class="col"><button onclick="modDone('{{ content.id }}','{{ content._id }}',0)" type="button" class="btn btn-outline-danger col">취소</button></td>
+                    </tr>
+                {% elif content.done == 0 %}
+                    <tr>
+                        <td class="col"><span>-999</span></td>
+                        <td class="col"><span>{{ content.day }}</span></td>
+                        <td class="col-8"><span>{{ content.work }}</span></td>
+                        <td class="col"><button onclick="modDone('{{ content.id }}','{{ content._id }}',1)" type="button" class="btn btn-outline-primary col">완료</button></td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+
+            <tr class="table-danger">
+                <td class="col"><span>-9</span></td>
+                <td class="col"><span>2022-09-19</span></td>
+                <td class="col-8"><span>test</span></td>
+                <td class="col"><button onclick="modDone(0)" type="button" class="btn btn-outline-primary col">완료</button></td>
+            </tr>
+            <tr class="table-primary">
+                <td class="col"><span>+89</span></td>
+                <td class="col"><span>2022-09-19</span></td>
+                <td class="col-8"><span>test</span></td>
+                <td class="col"><button onclick="done_bucket(0)" type="button" class="btn btn-outline-primary col">완료</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="mybox">
+    <h1>오시는길</h1>
+</div>
+<div class="mybox">
+    <div class="mymap">
+        지도 API
+    </div>
+</div>
 <script>
 
     let userInfo ='';
     //초기화
+    $(document).ready(function () {
+        $('#mydate').val(getToday());
+        get_user();
+    });
 
-
-    let show_user = () => {
+    let get_user = () => {
         $.ajax({
             type: "POST",
             url: "/users",
@@ -113,24 +175,12 @@
         });
     }
 
-    let show_main = () => {
-        $.ajax({
-            type: "GET",
-            url: "/main",
-            data: {},
-            success: function (response) {
-                let a = '{{ check_list }}'
-                console.log(a)
-            }
-        });
-
-    }
-
 
     $('#mydate').datepicker({
         format : "yyyy-mm-dd",
         language: "ko"
     });
+
 
 
     let insertwork = () => {
@@ -140,59 +190,49 @@
         if(mywork == '' || mydate == '') {
             alert('날짜 또는 할 일을 적어주세요.');
         } else {
-            console.log('qweqe')
             $.ajax({
                 type: "POST",
                 url: "/addCheckList",
                 data: {mywork : mywork ,mydate : mydate, user : userInfo['id']},
                 success: function (response) {
-                    alert(response["msg"])
+                    alert(response["msg"]);
+                    window.location.reload();
                 }
             });
         }
     }
 
-    function done_bucket(num) {
+        modDone = (id, _id, done) => {
             $.ajax({
                 type: "POST",
-                url: "/bucket/done",
-                data: {num_give: num},
+                url: "/modDone",
+                data: {id: id, _id: _id, done: done},
                 success: function (response) {
-                    alert(response["msg"])
+                    alert(response["msg"]);
                     window.location.reload();
                 }
             });
         }
 
-        undo_bucket = (num) => {
-            $.ajax({
-                type: "POST",
-                url: "/bucket/unDone",
-                data: {num_give: num},
-                success: function (response) {
-                    alert(response["msg"])
-                    window.location.reload();
-                }
-            });
+        const getToday = () =>{
+          const date = new Date();
+          let today = '';
+            if((date.getMonth()+1) < 10)
+            {
+              today = date.getFullYear()+'-0'+(date.getMonth()+1)+'-'+date.getDate();
+            }else{
+              today = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+            }
+            return today;
         }
-    const getToday = () =>{
-      const date = new Date();
-      let today = '';
-        if((date.getMonth()+1) < 10)
-        {
-          today = date.getFullYear()+'-0'+(date.getMonth()+1)+'-'+date.getDate();
-        }else{
-          today = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+
+        const isKeyExists = (obj,key) =>{
+          if( obj[key] == undefined ){
+              return true;
+          }else{
+              return false;
+          }
         }
-        return today;
-    }
-    const isKeyExists = (obj,key) =>{
-      if( obj[key] == undefined ){
-          return true;
-      }else{
-          return false;
-      }
-    }
 
 		// $('#datePicker').on("click", function (){
 		//     format: "yyyy-mm-dd",	//데이터 포맷 형식(yyyy : 년 mm : 월 dd : 일 )
