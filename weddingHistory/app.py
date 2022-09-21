@@ -39,15 +39,14 @@ SECRET_KEY = 'SPARTA'
 #         return redirect(url_for("login", msg="로그인 정보가 존재하지 않습니다."))
 
 
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def home():
-    print("#####");
     msg = request.args.get("msg")
 
     return render_template('login.html', msg=msg)
 
 
-@app.route('/register')
+@app.route('/register', methods=['GET','POST'])
 def register():
     return render_template('register.html')
 
@@ -58,7 +57,7 @@ def register():
 
 # [로그인 API]
 # id, pw를 받아서 맞춰보고, 토큰을 만들어 발급합니다.
-@app.route('/api/login', methods=['get', 'POST'])
+@app.route('/login', methods=['GET','POST'])
 def api_login():
     id_receive = request.form['id_give']
     pw_receive = request.form['pw_give']
@@ -66,26 +65,30 @@ def api_login():
     pw_hash = hashlib.sha256(pw_receive.encode('utf-8')).hexdigest()
 
     # id, 암호화된pw을 가지고 해당 유저를 찾습니다.
-    result = db.user.find_one({'id': id_receive, 'pw': pw_hash})
-
+    result = db.users.find_one({'username': id_receive, 'password': pw_hash})
     # 찾으면 JWT 토큰을 만들어 발급합니다.
     if result is not None:
         # JWT 토큰에는, payload와 시크릿키가 필요합니다.
         # 시크릿키가 있어야 토큰을 디코딩(=풀기) 해서 payload 값을 볼 수 있습니다.
         # 아래에선 id와 exp를 담았습니다. 즉, JWT 토큰을 풀면 유저ID 값을 알 수 있습니다.
         # exp에는 만료시간을 넣어줍니다. 만료시간이 지나면, 시크릿키로 토큰을 풀 때 만료되었다고 에러가 납니다.
+
         payload = {
             'id': id_receive,
             # 'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
-            'exp': datetime.datetime.utcnow() + timedelta(seconds=60 * 60 * 1)  # 로그인 1시간 유지
+            'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 1)  # 로그인 1시간 유지
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')  # 이건 실서버 배포할때 써야함 lo5000에선안됌
 
-        # token을 줍니다.
-        return jsonify({'result': 'success', 'token': token})
-    # 찾지 못하면
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')  # 이건 실서버 배포할때 써야함 lo5000에선안됌
+        #token을 줍니다.
+
+        #print(token)
+        return jsonify({'result': 'success', 'token': token, 'username': id_receive})
+        # 찾지 못하면
     else:
         return jsonify({'result': 'fail', 'msg': '아이디/비밀번호가 일치하지 않습니다.'})
+
+
 
 
 # [유저 정보 확인 API]
@@ -107,7 +110,7 @@ def api_valid():
 
         # payload 안에 id가 들어있습니다. 이 id로 유저정보를 찾습니다.
         # 여기에선 그 예로 닉네임을 보내주겠습니다.
-        userinfo = db.user.find_one({'id': payload['id']}, {'_id': 0})
+        userinfo = db.users.find_one({'id': payload['id']}, {'_id': 0})
         return jsonify({'result': 'success', 'nickname': userinfo['nick']})
     except jwt.ExpiredSignatureError:
         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
@@ -121,101 +124,95 @@ def api_valid():
 
 ##### 임효진님 시작#######
 
-# @app.route('/')
-# def home():
-#     token_receive = request.cookies.get('mytoken')
-#     try:
-#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-#
-#         return render_template('login.html')
-#     except jwt.ExpiredSignatureError:
-#         return redirect(url_for("login", msg="로그인 시간이 만료되었습니다."))
-#     except jwt.exceptions.DecodeError:
-#         return redirect(url_for("login", msg="로그인 정보가 존재하지 않습니다."))
+# @app.route('/register')
+# def register():
+#     msg = request.args.get("msg")
+#     return render_template('register.html', msg=msg)
 
 
-@app.route('/register')
-def login():
-    msg = request.args.get("msg")
-    return render_template('register.html', msg=msg)
+# @app.route('/sign_in', methods=['POST'])
+# def sign_in():
+#     # 로그인
+#     return jsonify({'result': 'success'})
 
 
-# @app.route('/user/<username>')
-# def user(username):
-#     # 각 사용자의 프로필과 글을 모아볼 수 있는 공간
-#     token_receive = request.cookies.get('mytoken')
-#     try:
-#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-#         status = (username == payload["id"])  # 내 프로필이면 True, 다른 사람 프로필 페이지면 False
-#
-#         user_info = db.users.find_one({"username": username}, {"_id": False})
-#         return render_template('user.html', user_info=user_info, status=status)
-#     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-#         return redirect(url_for("home"))
-
-
-@app.route('/sign_in', methods=['POST'])
-def sign_in():
-    # 로그인
-    return jsonify({'result': 'success'})
-
-
-@app.route('/sign_up/save', methods=['POST'])
+############ 이곳 수정 됫습니다 ##############
+@app.route('/register/sign_up', methods=['GET','POST'])
 def sign_up():
     username_receive = request.form['username_give']
     password_receive = request.form['password_give']
     date_receive = request.form['date_give']
     password_hash = hashlib.sha256(password_receive.encode('utf-8')).hexdigest()
+    ################여기 추가됨################
+    py = request.form['Py']
+    px = request.form['Px']
+    pname = request.form['Pname']
+    ################여기 까지################ 
     doc = {
-        "username": username_receive,  # 아이디
-        "password": password_hash,  # 비밀번호
-        "wedding-date": date_receive,  # 결혼식 확정일자
+        "username": username_receive,       # 아이디
+        "password": password_hash,          # 비밀번호
+        "wedding-date": date_receive,       # 결혼식 확정일자
+################여기 추가됨################
+        "PY": py,   #
+        "PX": px,   #지도 좌표 위치
+        "PNAME": pname #주소지 이름    
+################여기 까지################                     
     }
     db.users.insert_one(doc)
+
+    # 유저 dDay 날짜형식으로 형변환
+    date = datetime.strptime(date_receive, "%Y-%m-%d")
+    # 템프 체크리스트 가져오기
+    temp_check_list = list(db.temp_check_list.find({}, {'_id': False}))
+
+    temp_check_list = temp_check_list[0]
+    for index, temp_check in temp_check_list.items():
+        day = str(date - timedelta(days=int(temp_check["DAY"]))).split(' ')[0]
+        doc = {'id': username_receive, 'work': temp_check['TITLE'], 'day': day, 'done': 0}
+        db.check_list.insert_one(doc)
+
     return jsonify({'result': 'success'})
 
-
-@app.route('/sign_up/check_dup', methods=['POST'])
+###ID 중복확인
+@app.route('/sign_up/check_dup', methods=['GET','POST'])
 def check_dup():
     username_receive = request.form['username_give']
     exists = bool(db.users.find_one({"username": username_receive}))
     return jsonify({'result': 'success', 'exists': exists})
 
 
-# @app.route('/posting', methods=['POST'])
-# def posting():
-#     token_receive = request.cookies.get('mytoken')
-#     try:
-#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-#         # 포스팅하기
-#         return jsonify({"result": "success", 'msg': '포스팅 성공'})
-#     except (jwt.ExpiredSignatureError, jwt.exceptions.DecodeError):
-#         return redirect(url_for("home"))
 ##### 임효진님 #######
 
 
 ##### 민현홍 시작#######
 
 
-@app.route("/users", methods=["POST"])
+@app.route("/users", methods=['GET','POST'])
 def get_user():
-    user = list(db.users.find({}, {'_id': False}))
+
+    id = request.form['id']
+    #user = list(db.users.find({'username':id}, {'_id': False}))
+    user = db.users.find_one({'username': id}, {'_id': False, 'password': False})
     return jsonify({'user': user})
 
 
-@app.route("/main", methods=["GET"])
+@app.route("/main", methods=['GET','POST'])
 def main_get():
     try:
+        #받아온 id
         id = request.args.get('id')  # 'id'라는 key값
-
+        #유저 정보 가져오기
+        #user = db.users.find_one({'username': id}, {'_id': False,'password':False})
+        #유저 체크리스트 가져오기
         check_list = list(db.check_list.find({'id': id}).sort('day'))
+
     except Exception as e:
         print(e)
+    #return render_template('main.html', check_list=check_list)
+    return render_template('main.html', check_list=check_list, id=id)
 
-    return render_template('main.html', check_list=check_list)
 
-
-@app.route("/main/add", methods=["POST"])
+@app.route("/main/add", methods=['GET','POST'])
 def content_post():
     try:
         mywork = request.form['mywork']
@@ -240,7 +237,7 @@ def content_post():
     return jsonify({'msg': msg})
 
 
-@app.route("/main/modDone", methods=["POST"])
+@app.route("/main/modDone", methods=['GET','POST'])
 def modDone():
     try:
         userId = request.form['userId']
