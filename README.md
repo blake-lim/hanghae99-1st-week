@@ -1,6 +1,6 @@
-# Hanghae99 9기 9조
+# Hanghae99 9기 C반 9조
 항해99 9기 9조
-
+프로젝트 주소 : weddinghistory.shop
 -조원
 <br>1)민현홍(메인 페이지)</br>
 <br>2)최규범(메인 페이지)</br>
