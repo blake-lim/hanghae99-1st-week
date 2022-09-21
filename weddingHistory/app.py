@@ -1,60 +1,47 @@
-from pymongo import MongoClient
 import jwt
-import datetime
 import hashlib
 import certifi
-from flask import Flask, render_template, jsonify, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 ##### 김현진님 시작##########
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for
-from datetime import timedelta
 
 app = Flask(__name__)
 
-from pymongo import MongoClient
-
-import certifi
-
 ca = certifi.where()
 
-client = MongoClient('mongodb+srv://test:sparta@cluster0.qirhm.mongodb.net/cluster0?retryWrites=true&w=majority',
-                     tlsCAFile=ca)
-db = client.dbsparta_plus_week4
+from bson.objectid import ObjectId
+from pymongo import MongoClient
+
+client = MongoClient(
+    'mongodb+srv://minhyeonhong:m1245415@cluster0.1xfvvjw.mongodb.net/Cluster0?retryWrites=true&w=majority',
+    tlsCAFile=ca)
+db = client.dbsparta
 
 # JWT 토큰을 만들 때 필요한 비밀문자열입니다. 아무거나 입력해도 괜찮습니다.
 # 이 문자열은 서버만 알고있기 때문에, 내 서버에서만 토큰을 인코딩(=만들기)/디코딩(=풀기) 할 수 있습니다.
 SECRET_KEY = 'SPARTA'
 
-# JWT 패키지를 사용합니다. (설치해야할 패키지 이름: PyJWT)
-import jwt
-
-# 토큰에 만료시간을 줘야하기 때문에, datetime 모듈도 사용합니다.
-import datetime
-
-# 회원가입 시엔, 비밀번호를 암호화하여 DB에 저장해두는 게 좋습니다.
-# 그렇지 않으면, 개발자(=나)가 회원들의 비밀번호를 볼 수 있으니까요.^^;
-import hashlib
-
 
 #################################
 ##  HTML을 주는 부분             ##
 #################################
+# @app.route('/')
+# def home():
+#     token_receive = request.cookies.get('mytoken')
+#     try:
+#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+#         user_info = db.user.find_one({"id": payload['id']})
+#         return render_template('index.html', nickname=user_info["nick"])
+#     except jwt.ExpiredSignatureError:
+#         return redirect(url_for("login", msg="로그인 시간이 만료되었습니다."))
+#     except jwt.exceptions.DecodeError:
+#         return redirect(url_for("login", msg="로그인 정보가 존재하지 않습니다."))
+
+
 @app.route('/')
 def home():
-    token_receive = request.cookies.get('mytoken')
-    try:
-        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-        user_info = db.user.find_one({"id": payload['id']})
-        return render_template('index.html', nickname=user_info["nick"])
-    except jwt.ExpiredSignatureError:
-        return redirect(url_for("login", msg="로그인 시간이 만료되었습니다."))
-    except jwt.exceptions.DecodeError:
-        return redirect(url_for("login", msg="로그인 정보가 존재하지 않습니다."))
-
-
-@app.route('/login')
-def login():
+    print("#####");
     msg = request.args.get("msg")
 
     return render_template('login.html', msg=msg)
@@ -71,7 +58,7 @@ def register():
 
 # [로그인 API]
 # id, pw를 받아서 맞춰보고, 토큰을 만들어 발급합니다.
-@app.route('/api/login', methods=['get','POST'])
+@app.route('/api/login', methods=['get', 'POST'])
 def api_login():
     id_receive = request.form['id_give']
     pw_receive = request.form['pw_give']
@@ -92,7 +79,7 @@ def api_login():
             # 'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=5)
             'exp': datetime.datetime.utcnow() + timedelta(seconds=60 * 60 * 1)  # 로그인 1시간 유지
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8') #이건 실서버 배포할때 써야함 lo5000에선안됌
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')  # 이건 실서버 배포할때 써야함 lo5000에선안됌
 
         # token을 줍니다.
         return jsonify({'result': 'success', 'token': token})
@@ -128,22 +115,11 @@ def api_valid():
     except jwt.exceptions.DecodeError:
         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
 
+
 #########김현진님 끝#################
 
 
-
 ##### 임효진님 시작#######
-ca = certifi.where()
-app = Flask(__name__)
-app.config["TEMPLATES_AUTO_RELOAD"] = True
-app.config['UPLOAD_FOLDER'] = "./static/profile_pics"
-
-SECRET_KEY = 'SPARTA'
-
-client = MongoClient('mongodb+srv://test:sparta@cluster0.vds7tup.mongodb.net/Cluster0?retryWrites=true&w=majority',
-                     tlsCAFile=ca)
-db = client.dbsparta_plus_week4
-
 
 # @app.route('/')
 # def home():
@@ -158,8 +134,7 @@ db = client.dbsparta_plus_week4
 #         return redirect(url_for("login", msg="로그인 정보가 존재하지 않습니다."))
 
 
-
-@app.route('/login')
+@app.route('/register')
 def login():
     msg = request.args.get("msg")
     return render_template('register.html', msg=msg)
@@ -192,9 +167,9 @@ def sign_up():
     date_receive = request.form['date_give']
     password_hash = hashlib.sha256(password_receive.encode('utf-8')).hexdigest()
     doc = {
-        "username": username_receive,                               # 아이디
-        "password": password_hash,                                  # 비밀번호
-        "wedding-date": date_receive,                               # 결혼식 확정일자
+        "username": username_receive,  # 아이디
+        "password": password_hash,  # 비밀번호
+        "wedding-date": date_receive,  # 결혼식 확정일자
     }
     db.users.insert_one(doc)
     return jsonify({'result': 'success'})
@@ -219,32 +194,26 @@ def check_dup():
 ##### 임효진님 #######
 
 
-
 ##### 민현홍 시작#######
-from bson.objectid import ObjectId
-from pymongo import MongoClient
-client = MongoClient('mongodb+srv://minhyeonhong:m1245415@cluster0.1xfvvjw.mongodb.net/Cluster0?retryWrites=true&w=majority')
-db = client.dbsparta
 
-@app.route('/')
-def home():
-    return render_template('index.html')
 
 @app.route("/users", methods=["POST"])
 def get_user():
     user = list(db.users.find({}, {'_id': False}))
     return jsonify({'user': user})
 
+
 @app.route("/main", methods=["GET"])
 def main_get():
     try:
         id = request.args.get('id')  # 'id'라는 key값
 
-        check_list = list(db.check_list.find({'id':id}).sort('day'))
+        check_list = list(db.check_list.find({'id': id}).sort('day'))
     except Exception as e:
         print(e)
 
     return render_template('main.html', check_list=check_list)
+
 
 @app.route("/main/add", methods=["POST"])
 def content_post():
@@ -270,6 +239,7 @@ def content_post():
 
     return jsonify({'msg': msg})
 
+
 @app.route("/main/modDone", methods=["POST"])
 def modDone():
     try:
@@ -282,13 +252,15 @@ def modDone():
         elif (int(done) == 0):
             msg = '할 일 취소!'
 
-        db.check_list.update_one({'_id': ObjectId(_id),'id':userId}, {'$set': {'done': int(done)}})
+        db.check_list.update_one({'_id': ObjectId(_id), 'id': userId}, {'$set': {'done': int(done)}})
 
     except Exception as e:
         print(e)
         msg = '에러'
 
     return jsonify({'msg': msg})
+
+
 ##### 민현홍 #######
 
 
