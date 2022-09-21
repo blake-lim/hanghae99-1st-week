@@ -15,9 +15,9 @@
 Wedding History는 private하게 나의 D-day 일정을 통해 보편적인 준비사항들과 사용자 개인의 준비사항을 추가/삭제할 수 있습니다.😎</br>
 <br></br>
 
-<br>제작기간<
-2022년 9월19일 ~ 9월22일
-프론트엔드 : Vanila JS, Jquery, Bulma, Bootstrap
-<백엔드 : 파이썬 flask, pymongo, pyjwt, request</br>
+<br>제작기간</br>
+<br>2022년 9월19일 ~ 9월22일</br>
+<br>프론트엔드 : Vanila JS, Jquery, Bulma, Bootstrap</br>
+<br>백엔드 : 파이썬 flask, pymongo, pyjwt, request</br>
 
 ---
