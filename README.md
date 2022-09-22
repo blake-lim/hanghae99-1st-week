@@ -23,8 +23,7 @@ Wedding History는 private하게 나의 D-day 일정을 통해 보편적인 준�
 <br>백엔드 : 파이썬 flask, pymongo, pyjwt, request
 ---
 <h2>로그인 화면</h2>
-<img width="1726" src="![KakaoTalk_Photo_2022-09-22-16-49-03](https://user-images.githubusercontent.com/86904667/191688912-946c51b1-f62a-4973-aeee-d46003b8082b.jpeg)
-">
+<img width="1726" alt="스크린샷 2022-09-22 16 54 40" src="https://user-images.githubusercontent.com/86904667/191690039-407fe4e6-89ca-4308-9461-6c21443d3d55.png">
 로그인 화면
 
 <h2>회원가입 화면</h2>
@@ -32,12 +31,10 @@ Wedding History는 private하게 나의 D-day 일정을 통해 보편적인 준�
 회원가입 화면
 
 <h2>지도 기능</h2>
-<img width="1726" src="![KakaoTalk_Photo_2022-09-22-16-50-54](https://user-images.githubusercontent.com/86904667/191689354-46d42ca8-836c-4cfb-835c-0b3ec337f208.jpeg)
-">
+<img width="1726" alt="스크린샷 2022-09-22 16 55 18" src="https://user-images.githubusercontent.com/86904667/191690199-62b35ab3-2904-4a2c-9a0a-fac979b233c7.png">
 지도 기능
 
 <h2>메인페이지 화면</h2>
-<img width="1726" src="![KakaoTalk_Photo_2022-09-22-16-52-15](https://user-images.githubusercontent.com/86904667/191689593-b400b3d8-409c-474b-922a-9a2c693d5350.png)
-">
+<img width="1797" alt="스크린샷 2022-09-22 16 55 55" src="https://user-images.githubusercontent.com/86904667/191690326-d170a1fc-7801-4be2-9fc9-39a6d47d0fb4.png">
 메인페이지
 
