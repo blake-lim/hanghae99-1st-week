@@ -120,7 +120,6 @@
             data: {},
             success: function (response) {
                 let a = '{{ check_list }}'
-                console.log(a)
             }
         });
 
@@ -140,7 +139,6 @@
         if(mywork == '' || mydate == '') {
             alert('날짜 또는 할 일을 적어주세요.');
         } else {
-            console.log('qweqe')
             $.ajax({
                 type: "POST",
                 url: "/addCheckList",

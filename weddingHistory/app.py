@@ -79,7 +79,7 @@ def api_login():
             'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 1)  # 로그인 1시간 유지
         }
 
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')  # 이건 실서버 배포할때 써야함 lo5000에선안됌
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8') 
         #token을 줍니다.
 
         #print(token)
