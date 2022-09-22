@@ -1,10 +1,11 @@
 # Hanghae99 9기 C반 9조
-프로젝트 주소 : weddinghistory.shop
+프로젝트 주소 : weddinghistory.shop 
+유튜브 시연 주소 : https://www.youtube.com/watch?v=fr9m_umEW5I&t=3s
 <br></br>
 **조원**
 <br>1)민현홍(메인 페이지)
-<br>2)최규범(메인 페이지)
-<br>3)김현진(첫 페이지)
+<br>2)최규범(지도 기능)
+<br>3)김현진(로그인 페이지)
 <br>4)임효진(회원가입 페이지)
 
 ---
